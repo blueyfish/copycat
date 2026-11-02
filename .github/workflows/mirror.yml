@@ -1,0 +1,33 @@
+name: Mirror Repositories
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # Automatically runs every 12 hours
+  workflow_dispatch:      # Allows you to trigger it manually via the UI button
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # A single failing repository won't stop the others
+      matrix:
+        repo_config:
+          - { src_platform: "codeberg.org", src_repo: "TipzTeam/viola", tgt_repo: "blueyfish/viola" }
+
+    steps:
+      - name: Mirror ${{ matrix.repo_config.src_repo }}
+        env:
+          # Your single Personal Access Token stored in Settings > Secrets
+          MIRROR_TOKEN: ${{ secrets.BULK_MIRROR_PAT }} 
+        run: |
+          # 1. Construct uniform URLs using the same token
+          SRC_URL="https://x-access-token:${MIRROR_TOKEN}@${{ matrix.repo_config.src_platform }}/${{ matrix.repo_config.src_repo }}.git"
+          TGT_URL="https://x-access-token:${MIRROR_TOKEN}@://github.com{{ matrix.repo_config.tgt_repo }}.git"
+
+          # 2. Execute operations
+          echo "Cloning bare repository from ${{ matrix.repo_config.src_platform }}..."
+          git clone --bare "$SRC_URL" current_repo.git
+          cd current_repo.git
+
+          echo "Pushing mirror to ://github.com{{ matrix.repo_config.tgt_repo }}..."
+          git push --mirror "$TGT_URL"
