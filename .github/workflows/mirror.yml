@@ -2,8 +2,8 @@ name: Mirror Repositories
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Automatically runs every 12 hours
-  workflow_dispatch:      # Allows you to trigger it manually via the UI button
+    - cron: '0 0 * * *' # Automatically runs once daily at 00:00 (midnight)
+  workflow_dispatch: # Allows you to trigger it manually via the UI button
 
 jobs:
   mirror:
@@ -11,23 +11,47 @@ jobs:
     strategy:
       fail-fast: false # A single failing repository won't stop the others
       matrix:
-        repo_config:
-          - { src_platform: "codeberg.org", src_repo: "TipzTeam/viola", tgt_repo: "viola" }
+        repo_name:
+          # Android applications
+          - "viola"
+          - "pomodoro"
+          - "circule"
+
+          # OPPO Thortanium devices
+          - "android_device_oppo_thortanium-common"
+          - "android_device_oppo_A57"
+          - "android_device_oppo_A57-camera"
+          - "android_device_oppo_R9s"
+          - "android_device_oppo_R9Plus"
+          - "android_device_oppo_R9sPlus"
+          - "android_kernel_oppo_msm8937"
+          - "proprietary_vendor_oppo_thortanium-common"
+          - "proprietary_vendor_oppo_A57"
+          - "proprietary_vendor_oppo_R9s"
+          - "proprietary_vendor_oppo_R9Plus"
+          - "proprietary_vendor_oppo_R9sPlus"
+          - "proprietary_vendor_oppo"
+          - "recovery_device_oppo_thortanium"
+
+          # ZTE Axon 7
+          - "android_device_zte_axon7"
+          - "android_kernel_zte_msm8996"
+          - "proprietary_vendor_zte"
 
     steps:
-      - name: Mirror ${{ matrix.repo_config.src_repo }}
+      - name: Mirror ${{ matrix.repo_name }}
         env:
           # Your single Personal Access Token stored in Settings > Secrets
           MIRROR_TOKEN: ${{ secrets.BULK_MIRROR_PAT }} 
         run: |
           # 1. Construct uniform URLs using the same token
-          SRC_URL="https://${{ matrix.repo_config.src_platform }}/${{ matrix.repo_config.src_repo }}.git"
-          TGT_URL="https://x-access-token:${MIRROR_TOKEN}@github.com/blueyfish/${{ matrix.repo_config.tgt_repo }}.git"
+          SRC_URL="https://codeberg.org/TipzTeam/${{ matrix.repo_name }}.git"
+          TGT_URL="https://x-access-token:${MIRROR_TOKEN}@github.com/blueyfish/${{ matrix.repo_name }}.git"
 
           # 2. Execute operations
-          echo "Cloning bare repository from ${{ matrix.repo_config.src_platform }}..."
+          echo "Cloning bare repository from Codeberg..."
           git clone --bare "$SRC_URL" current_repo.git
           cd current_repo.git
 
-          echo "Pushing mirror to ://github.com/${{ matrix.repo_config.tgt_repo }}..."
+          echo "Pushing mirror to github.com/blueyfish/${{ matrix.repo_name }}..."
           git push --mirror "$TGT_URL"
