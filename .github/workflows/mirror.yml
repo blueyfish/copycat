@@ -38,6 +38,20 @@ jobs:
           - "android_kernel_zte_msm8996"
           - "proprietary_vendor_zte"
 
+          # Cyanogen MSM8916 devices
+          - "android_device_cyanogen_msm8916-common"
+          - "android_device_lenovo_phoenix"
+          - "android_kernel_lenovo_phoenix"
+          - "proprietary_vendor_lenovo_phoenix"
+          - "android_device_xiaomi_wt88047x"
+          - "android_kernel_wingtech_msm8916"
+          - "proprietary_vendor_xiaomi"
+          - "android_hardware_qcom_display"
+
+          # Miscellaneous devices
+          - "android_device_qihoo_w701"
+          - "recovery_device_bioland_g6006bio"
+
     steps:
       - name: Mirror ${{ matrix.repo_name }}
         env:
